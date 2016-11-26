@@ -18,6 +18,7 @@ public class AStarSimulator{
 	
     public LevelScene levelScene;
     public LevelScene workScene;
+    private LevelScene simState = null;
     private float maxSpeed = 10.9090909f;
     public int debugPos = 0;
     
@@ -33,11 +34,21 @@ public class AStarSimulator{
     			plan.add(n._action);
     		}
     	}
+    	simState = cloneState(nodes.get(nodes.size() -1).state());
     	return plan;
     }
     
+    public void simNull(){
+    	simState = null;
+    }
+    
     public ArrayList<Node> search(){
-    	workScene = backupState();
+    	if (simState == null){
+    		workScene = backupState();
+    	}
+    	else{
+    		workScene = simState;
+    	}
     	ArrayList<Node> path = new ArrayList<Node>();
     	HashMap<Node, Float> cost_so_far = new HashMap<Node, Float>();
     	ArrayList< Pair<Node, Float> > frontier = new ArrayList<Pair <Node, Float> >();
@@ -47,11 +58,8 @@ public class AStarSimulator{
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
     		
-    		if(current._x - (levelScene.mario.x / 16) >= 2 || frontier.size() >= 20000){
+    		if(current._x - (levelScene.mario.x / 16) >= 1){
     			//Extract Path
-    			if(frontier.size() >= 20000){
-    				System.out.println("Early Exit");
-    			}
     			path.add(current);
     			while(current.parent() != null){
     				if(current.action() != null){
@@ -230,6 +238,9 @@ public class AStarSimulator{
 			return _action;
 		}
 		
+		public LevelScene state(){
+			return _state;
+		}
 		
 		public ArrayList<Node> genChildren(){
 			if(_state == null){
@@ -261,18 +272,20 @@ public class AStarSimulator{
 			// Simulated location after action
 			float diffx = _x - currX;
 			float diffy = _y - currY;
-			if (currX < _x){
+			if (currX > _x){
 				diffx *= 2;
 			} 
 		    // Distance
 			//float d = (float) Math.sqrt((diffx * diffx) + (diffy * diffy));
-			return ((11/16) - diffx) + (nDamage()/5) - (1/_y);
+			float val = (1 - diffx) + (nDamage());
+			return val;
 			
 		}
 		
 	    public float h(){
 	    	float relativex = _x % 22;
-	    	return (22 - relativex);
+	    	float ret = 22 - relativex;
+	    	return ret;
 	    }
 		
 	    public boolean canJumpHigher(Node n, boolean checkParent){
@@ -292,8 +305,8 @@ public class AStarSimulator{
 				toReturn.add(createAction(false, false, false, true, false));
 				toReturn.add(createAction(false, false, false, true, true ));
 				// Jump Left
-				toReturn.add(createAction(true, false, false, true, false));
-				toReturn.add(createAction(true, false, false, true, true ));
+				//toReturn.add(createAction(true, false, false, true, false));
+				//toReturn.add(createAction(true, false, false, true, true ));
 			}
 			// Right
 			toReturn.add(createAction(false, true, false, false, false));

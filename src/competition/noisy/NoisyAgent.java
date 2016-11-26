@@ -23,7 +23,8 @@ public class NoisyAgent implements Agent{
     private ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
-    private int rReplan = 0;
+    private int repeat = 4;
+    
 
     public void reset(){
     	//boolean action[] = {false, true, false, true, true};
@@ -55,19 +56,19 @@ public class NoisyAgent implements Agent{
     	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1]){
     		System.out.println("Inaccuracy in simulator position");
     	}
-    	// Occasionally replan anyways
-    	rReplan++;
-    	if(requirePlan || rReplan == 4){
+    	if(requirePlan){
     		//reset();
     		plan();
     		requirePlan = false;
-    		rReplan = 0;
     	}
         return popAction();
     }
     private void plan(){
     	plan.clear();
-    	plan.addAll(sim.getPlan());
+    	for(int i = 0; i < repeat; i++){
+    		plan.addAll(sim.getPlan());
+    	}
+    	sim.simNull();
     }
     
     public boolean[] popAction(){
