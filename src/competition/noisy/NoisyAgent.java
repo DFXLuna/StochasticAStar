@@ -23,6 +23,7 @@ public class NoisyAgent implements Agent{
     private ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
+    private int rReplan = 0;
 
     public void reset(){
     	//boolean action[] = {false, true, false, true, true};
@@ -32,8 +33,8 @@ public class NoisyAgent implements Agent{
     }
 
 	// TODO
-    // Possible Early Exit
-    // CanJumpHigher and getting over >1 fram jumps
+    // Prioritizing going right
+    // getting >1 frame jumps
     // Add noise
 	// Check for inaccuracy in simulation
     // Possibly budget time
@@ -54,10 +55,13 @@ public class NoisyAgent implements Agent{
     	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1]){
     		System.out.println("Inaccuracy in simulator position");
     	}
-    	if(requirePlan){
+    	// Occasionally replan anyways
+    	rReplan++;
+    	if(requirePlan || rReplan == 4){
     		//reset();
     		plan();
     		requirePlan = false;
+    		rReplan = 0;
     	}
         return popAction();
     }

@@ -18,7 +18,7 @@ public class AStarSimulator{
 	
     public LevelScene levelScene;
     public LevelScene workScene;
-    private float maxMarioSpeed = 10.9090909f;
+    private float maxSpeed = 10.9090909f;
     public int debugPos = 0;
     
     public int timeBudget = 20; // ms 
@@ -32,9 +32,6 @@ public class AStarSimulator{
     		for(int i = 0; i < n._repeat; i++){
     			plan.add(n._action);
     		}
-    	}
-    	for(boolean[] b : plan){
-    		System.out.println(printAction(b));
     	}
     	return plan;
     }
@@ -50,8 +47,11 @@ public class AStarSimulator{
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
     		
-    		if(current._x - (levelScene.mario.x / 16) >= 8 || frontier.size() >= 20000){
+    		if(current._x - (levelScene.mario.x / 16) >= 2 || frontier.size() >= 20000){
     			//Extract Path
+    			if(frontier.size() >= 20000){
+    				System.out.println("Early Exit");
+    			}
     			path.add(current);
     			while(current.parent() != null){
     				if(current.action() != null){
@@ -195,12 +195,11 @@ public class AStarSimulator{
 		levelScene = l;
 	}
 	
-	public void advanceStep(boolean[] action)
-	{
+	public void advanceStep(boolean[] action){
 		levelScene.mario.setKeys(action);
 		levelScene.tick();
 	}
- 
+
 	public class Node{
 		private boolean[] _action = null;
 		public float _x, _y;
@@ -255,6 +254,7 @@ public class AStarSimulator{
 	    	return _state.mario.damage;
 	    }
 		
+		// cost from n to this
 		public float cost(Node n){
 			float currX = n._x;
 			float currY = n._y;
@@ -266,13 +266,13 @@ public class AStarSimulator{
 			} 
 		    // Distance
 			//float d = (float) Math.sqrt((diffx * diffx) + (diffy * diffy));
-			return ((11/16) - diffx) + (nDamage()/2);
+			return ((11/16) - diffx) + (nDamage()/5) - (1/_y);
 			
 		}
 		
 	    public float h(){
-	    	float relativeP = _x % 22;
-	    	return 22 - relativeP;
+	    	float relativex = _x % 22;
+	    	return (22 - relativex);
 	    }
 		
 	    public boolean canJumpHigher(Node n, boolean checkParent){
@@ -299,8 +299,8 @@ public class AStarSimulator{
 			toReturn.add(createAction(false, true, false, false, false));
 			toReturn.add(createAction(false, true, false, false, true ));
 			// Left
-			toReturn.add(createAction(true, false, false, false, false));
-			toReturn.add(createAction(true, false, false, false, true ));
+			//toReturn.add(createAction(true, false, false, false, false));
+			//toReturn.add(createAction(true, false, false, false, true ));
 			// Nothing
 			//toReturn.add(createAction(false, false, false, false, false));
 			return toReturn;
