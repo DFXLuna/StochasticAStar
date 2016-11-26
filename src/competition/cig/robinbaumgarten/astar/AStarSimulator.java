@@ -330,51 +330,7 @@ public class AStarSimulator
     	visitedStates.clear();
     	posPool.addAll(startPos.generateChildren());
     	currentSearchStartingMarioXPos = levelScene.mario.x; 
-    	
-    	/*
-    	if (bestPosition != null)
-    	{
-    		LevelScene internal = backupState();
-    		// insert old plan
-    		SearchNode pos = bestPosition;
-    		// rewind
-    		int steps = 0;
-    		while (pos.parentPos != null)
-    		{
-    			steps++;
-    			pos = pos.parentPos;
-    		}
-    		if (steps > 3)
-    		{
-	    		pos = pos.chosenChild.chosenChild.chosenChild;
-	    		// go forward
-	    		if (pos != null && pos.parentPos != null)
-	    		{
-		    		pos.parentPos.sceneSnapshot = backupState(); // overwrite previous scenesnapshot
-		    		//float previousRemainingTime = pos.remainingTime;
-		    		while(pos != null && pos.remainingTime == pos.simulatePos())
-		    		{
-		    			// same conditions
-		    			SearchNode newP = new SearchNode(pos.action, pos.repetitions, pos.parentPos);
-		    	    	newP.sceneSnapshot = pos.sceneSnapshot;
-		    	    	newP.remainingTime = pos.remainingTime;
-		    	    	newP.remainingTimeEstimated = pos.remainingTimeEstimated;
-		    	    	posPool.add(newP);
-		    	    	//posPool.addAll(newP.generateChildren());
-		    	    	pos = pos.chosenChild;
-		    	    	
-		    	    }
-	    		}
-	    		restoreState(internal);
-    		}
-    	}
-    	
-    	
-		for(int i = 0; i < 1000; i++)
-		{
-			GlobalOptions.Pos[i][0] = 0;
-			GlobalOptions.Pos[i][1] = 0;
-		}*/
+   
     	debugPos = 0;
     	bestPosition = startPos;
     	furthestPosition = startPos;
@@ -458,8 +414,8 @@ public class AStarSimulator
     		//if (current.sceneSnapshot != null && current.sceneSnapshot.mario.y > 200) jumpModifier += 0.001f * (300-current.sceneSnapshot.mario.y);
     		float currentCost = current.getRemainingTime()
     			+ current.timeElapsed * 0.90f + jumpModifier; // slightly bias towards furthest positions 
-    		//System.out.println("Looking at pos with elapsed time "+current.timeElapsed+" est time: "
-    		//		+ current.getRemainingTime() + " actions: " + printAction(current.action));
+    		System.out.println("Looking at pos with elapsed time "+current.timeElapsed+" est time: "
+    				+ current.getRemainingTime() + " actions: " + printAction(current.action));
     		if (currentCost < bestPosCost)
     		{
     			bestPos = current;

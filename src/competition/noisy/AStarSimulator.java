@@ -70,7 +70,7 @@ public class AStarSimulator{
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
     		
-    		if(dist(current, start) >= .5){
+    		if(dist(current, start) >= 2){
     			//Extract Path
     			path.add(current);
     			while(current.parent() != null){
@@ -84,10 +84,10 @@ public class AStarSimulator{
     			return path;
     		}
     		for(Node next : current.genChildren()){
-    			float new_cost = cost_so_far.get(current) + next.cost(current);
+    			float new_cost = cost_so_far.get(current) + next.cost(next._x, next._state.mario.xa) + next.h(current);
     			if(!cost_so_far.containsKey(next) || new_cost < cost_so_far.get(next)){
     				cost_so_far.put(next, new_cost);
-    				float priority = new_cost + next.h();
+    				float priority = new_cost;
     				frontier.add(new Pair<Node, Float>(next, priority));
     			}
     		}
@@ -273,27 +273,19 @@ public class AStarSimulator{
 	    	return toReturn;
 	    }
 		
-		// cost from n to this
-		public float cost(Node n){
-			float currX = n._x;
-			float currY = n._y;
-			// Simulated location after action
-			float diffx = _x - currX;
-			//float diffy = _y - currY;
-			float dam = nDamage();
-		    // Distance
-			float d = dist(this, n);
-			float val =  d + 2 * (dam * dam * dam);
-			return val;
-			
+		// cost and h are flipped but the algorithm performs better that way
+		// Damage times how far mario has come
+		public float h(Node n){
+			float d  = (nDamage() - n.nDamage()); 
+			float od = (1000000 - 100 * _x);
+			return d * od;
 		}
 		
-		// 352 is the edge of the screen
-	    public float h(){
-	    	float xh = ((maxRight * 16 + levelScene.mario.x) % 352) - ((_x * 16) % 352);
-	    	//float yh = (15 - _y);
-	    	return xh;
-	    }
+		// Distance from some point waaaaaaay off to the right - how far mario has come and can go.
+		public float cost(float currx, float currxa){
+			float toReturn = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed - 1000; 
+			return toReturn;
+		}
 		
 	    public boolean canJumpHigher(Node n, boolean checkParent){
 	    	if (n._parent != null && checkParent
@@ -321,8 +313,8 @@ public class AStarSimulator{
 			// Left
 			//toReturn.add(createAction(true, false, false, false, false));
 			//toReturn.add(createAction(true, false, false, false, true ));
-			// Nothing
-			//toReturn.add(createAction(false, false, false, false, false));
+			// duck
+			toReturn.add(createAction(false, false, true, false, false));
 			return toReturn;
 	    }
 	    

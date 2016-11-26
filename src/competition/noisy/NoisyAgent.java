@@ -23,21 +23,20 @@ public class NoisyAgent implements Agent{
     private ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
-    private int repeat = 4;
-    private float lastx = 32;
-    private float lasty = 3;
+    private int repeat = 2;
+    private int error = 0;
     
 
     public void reset(){
     	//boolean action[] = {false, true, false, true, true};
         //plan.add(action);
         requirePlan = true;
+        error = 0;
         sim = new AStarSimulator();
     }
 
 	// TODO
-    // Prioritizing going right
-    // getting >1 frame jumps
+    // Jumps are still weird
     // Add noise
 	// Check for inaccuracy in simulation
     // Possibly budget time
@@ -48,24 +47,21 @@ public class NoisyAgent implements Agent{
     	float[] m = observation.getMarioFloatPos();
     	if(prevAction != null){
     		sim.advanceStep(prevAction);
-    		//sim.levelScene.mario.x = m[0];
-    		//sim.levelScene.mario.y = m[1];
     	}
     	sim.setLevelPart(scene, enemies);
     	
-    	// We only want to replan if the last plan has expired
 
-    	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1]){
-
+    	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1] - 3){
     		System.out.println("Inaccuracy in simulator position");
-    		sim.levelScene.mario.x = m[0];
-			sim.levelScene.mario.xa = (m[0] - lastx) * 0.89f;
-    		sim.levelScene.mario.y = m[1];
-			sim.levelScene.mario.ya = (m[1] - lasty) * 0.85f;
+    		error++;
+    		if(error > 5){
+    			sim.levelScene.mario.x = m[0];
+    			sim.levelScene.mario.y = m[1] - 3;
+    			requirePlan = true;
+    		}
+
     	}
-    	
-    	lastx = m[0];
-    	lasty = m[1];
+    	// We only want to replan if the last plan has expired
     	if(requirePlan){
     		//reset();
     		plan();
