@@ -24,6 +24,8 @@ public class NoisyAgent implements Agent{
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
     private int repeat = 4;
+    private float lastx = 32;
+    private float lasty = 3;
     
 
     public void reset(){
@@ -45,17 +47,25 @@ public class NoisyAgent implements Agent{
     	// Advance the sim based on last action.
     	float[] m = observation.getMarioFloatPos();
     	if(prevAction != null){
-    		//sim.advanceStep(prevAction);
-    		sim.levelScene.mario.x = m[0];
-    		sim.levelScene.mario.y = m[1];
+    		sim.advanceStep(prevAction);
+    		//sim.levelScene.mario.x = m[0];
+    		//sim.levelScene.mario.y = m[1];
     	}
     	sim.setLevelPart(scene, enemies);
     	
     	// We only want to replan if the last plan has expired
 
     	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1]){
+
     		System.out.println("Inaccuracy in simulator position");
+    		sim.levelScene.mario.x = m[0];
+			sim.levelScene.mario.xa = (m[0] - lastx) * 0.89f;
+    		sim.levelScene.mario.y = m[1];
+			sim.levelScene.mario.ya = (m[1] - lasty) * 0.85f;
     	}
+    	
+    	lastx = m[0];
+    	lasty = m[1];
     	if(requirePlan){
     		//reset();
     		plan();

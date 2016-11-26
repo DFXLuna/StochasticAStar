@@ -23,8 +23,23 @@ public class AStarSimulator{
     public int debugPos = 0;
     
     public int timeBudget = 20; // ms 
-    // max actual location is 176
+    // max actual right is 176
     private int maxRight = 11;
+    // Right side of screen is 352 
+    
+    ////////////////////Initialization///////////////////////
+    public AStarSimulator(){
+    	initialiseSimulator();
+    }
+	
+    public void initialiseSimulator()
+	{
+		levelScene = new LevelScene();
+		levelScene.init();	
+		levelScene.level = new Level(1500,15);
+		workScene = backupState();
+	}
+    /////////////////////////////////////////////////////////
     
     public ArrayList<boolean[]> getPlan(){
     	ArrayList<Node> nodes = search();
@@ -38,10 +53,6 @@ public class AStarSimulator{
     	return plan;
     }
     
-    public void simNull(){
-    	simState = null;
-    }
-    
     public ArrayList<Node> search(){
     	if (simState == null){
     		workScene = backupState();
@@ -53,12 +64,13 @@ public class AStarSimulator{
     	HashMap<Node, Float> cost_so_far = new HashMap<Node, Float>();
     	ArrayList< Pair<Node, Float> > frontier = new ArrayList<Pair <Node, Float> >();
     	Node current = new Node();
+    	Node start = current;
     	cost_so_far.put(current, 0f);
     	frontier.add(new Pair<Node, Float>(current, 0f));
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
     		
-    		if(current._x - (levelScene.mario.x / 16) >= 1){
+    		if(dist(current, start) >= .5){
     			//Extract Path
     			path.add(current);
     			while(current.parent() != null){
@@ -83,9 +95,79 @@ public class AStarSimulator{
     	System.out.println("Error in a*!");
     	return null;
     }
+
+	public void simStep(boolean[] action){
+		workScene.mario.setKeys(action);
+		workScene.tick();
+	}
+	
+	public LevelScene simulateAction(boolean[] action, int repeat){
+		for(int i = 0; i < repeat; i++){
+			simStep(action);
+		}
+		LevelScene toReturn = cloneState(workScene);
+		workScene = cloneState(levelScene);
+		return toReturn;
+	}
+
+	
+	public void advanceStep(boolean[] action){
+		levelScene.mario.setKeys(action);
+		levelScene.tick();
+	}
+	
+    ////////////////////Utility Functions////////////////////
+    public void simNull(){
+    	simState = null;
+    }
     
-    // Roll your own priority queue because Java's has
-    // has more overhead than it's worth
+    // Distance in grid (0,22) units
+    public float dist(Node n1, Node n2){
+    	float diffx = n1._x - n2._x;
+    	float diffy = n1._y - n2._y;
+		return (float) Math.sqrt((diffx * diffx) + (diffy * diffy));
+    }
+	
+	public LevelScene cloneState(LevelScene l){
+		LevelScene toReturn = null;
+		try{
+			toReturn = (LevelScene) l.clone();
+		}
+		catch (CloneNotSupportedException e){
+			e.printStackTrace();
+		}
+		return toReturn;
+	}
+	
+	public void restoreState(LevelScene l){
+		levelScene = l;
+	}
+	
+	
+	public LevelScene backupState(){
+		LevelScene sceneCopy = null;
+		try
+		{
+			sceneCopy = (LevelScene) levelScene.clone();
+		} catch (CloneNotSupportedException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return sceneCopy;
+	}
+    
+    public String printAction(boolean[] action)
+    {
+    	String s = "";
+    	if (action[Mario.KEY_RIGHT]) s+= "Forward ";
+    	if (action[Mario.KEY_LEFT]) s+= "Backward ";
+    	if (action[Mario.KEY_SPEED]) s+= "Speed ";
+    	if (action[Mario.KEY_JUMP]) s+= "Jump ";
+    	if (action[Mario.KEY_DOWN]) s+= "Duck";
+    	return s;
+    }
+    
     public Node getBest(ArrayList< Pair<Node, Float> > frontier){
     	Float min = frontier.get(0).b;
     	int mini = 0;
@@ -101,15 +183,16 @@ public class AStarSimulator{
     	return toReturn;
     }
     
-
-    
-    public AStarSimulator()
-    {
-    	initialiseSimulator();
+    // distance covered at maximum acceleration with initialSpeed for ticks timesteps 
+    private float maxForwardMovement(float initialSpeed, int ticks){
+    	float y = ticks;
+    	float s0 = initialSpeed;
+    	return (float) (99.17355373 * Math.pow(0.89,y+1)
+    	  -9.090909091*s0*Math.pow(0.89,y+1)
+    	  +10.90909091*y-88.26446282+9.090909091*s0);
     }
     
-    public float[] estimateMaximumForwardMovement(float currentAccel, boolean[] action, int ticks)
-    {
+    public float[] estimateMaximumForwardMovement(float currentAccel, boolean[] action, int ticks){
     	float dist = 0;
     	float runningSpeed =  action[Mario.KEY_SPEED] ? 1.2f : 0.6f;
     	int dir = 0;
@@ -127,87 +210,11 @@ public class AStarSimulator{
     	return ret;
     }
     
-    // distance covered at maximum acceleration with initialSpeed for ticks timesteps 
-    private float maxForwardMovement(float initialSpeed, int ticks)
-    {
-    	float y = ticks;
-    	float s0 = initialSpeed;
-    	return (float) (99.17355373 * Math.pow(0.89,y+1)
-    	  -9.090909091*s0*Math.pow(0.89,y+1)
-    	  +10.90909091*y-88.26446282+9.090909091*s0);
-    }
-    
 	public void setLevelPart(byte[][] levelPart, float[] enemies){
 		levelScene.setLevelScene(levelPart);
 		levelScene.setEnemies(enemies);
 	}
-    
-    public String printAction(boolean[] action)
-    {
-    	String s = "";
-    	if (action[Mario.KEY_RIGHT]) s+= "Forward ";
-    	if (action[Mario.KEY_LEFT]) s+= "Backward ";
-    	if (action[Mario.KEY_SPEED]) s+= "Speed ";
-    	if (action[Mario.KEY_JUMP]) s+= "Jump ";
-    	if (action[Mario.KEY_DOWN]) s+= "Duck";
-    	return s;
-    }
-    
-	public void initialiseSimulator()
-	{
-		levelScene = new LevelScene();
-		levelScene.init();	
-		levelScene.level = new Level(1500,15);
-		workScene = backupState();
-	}
-
-	
-	public LevelScene backupState(){
-		LevelScene sceneCopy = null;
-		try
-		{
-			sceneCopy = (LevelScene) levelScene.clone();
-		} catch (CloneNotSupportedException e)
-		{
-			e.printStackTrace();
-		}
-		
-		return sceneCopy;
-	}
-	public void simStep(boolean[] action){
-		workScene.mario.setKeys(action);
-		workScene.tick();
-	}
-	
-	public LevelScene simulateAction(boolean[] action, int repeat){
-		for(int i = 0; i < repeat; i++){
-			simStep(action);
-		}
-		LevelScene toReturn = cloneState(workScene);
-		workScene = cloneState(levelScene);
-		return toReturn;
-	}
-	
-	public LevelScene cloneState(LevelScene l){
-		LevelScene toReturn = null;
-		try{
-			toReturn = (LevelScene) l.clone();
-		}
-		catch (CloneNotSupportedException e){
-			e.printStackTrace();
-		}
-		return toReturn;
-	}
-	
-	public void restoreState(LevelScene l){
-		levelScene = l;
-	}
-	
-	public void advanceStep(boolean[] action){
-		levelScene.mario.setKeys(action);
-		levelScene.tick();
-	}
-
+    /////////////////////////////////////////////////////////
 	public class Node{
 		private boolean[] _action = null;
 		public float _x, _y;
@@ -258,11 +265,12 @@ public class AStarSimulator{
 		}
 		
 		private float nDamage(){
+			float toReturn = _state.mario.damage;
 	    	if (_state.level.isGap[(int) (_state.mario.x/16)] &&
-	    	_state.mario.y > _state.level.gapHeight[(int) (_state.mario.x/16)]*16){
-	    		_state.mario.damage+=5;
+	    	_state.mario.y >= _state.level.gapHeight[(int) (_state.mario.x/16)]*16){
+	    		toReturn += 5;
 	    	}
-	    	return _state.mario.damage;
+	    	return toReturn;
 	    }
 		
 		// cost from n to this
@@ -271,21 +279,20 @@ public class AStarSimulator{
 			float currY = n._y;
 			// Simulated location after action
 			float diffx = _x - currX;
-			float diffy = _y - currY;
-			if (currX > _x){
-				diffx *= 2;
-			} 
+			//float diffy = _y - currY;
+			float dam = nDamage();
 		    // Distance
-			//float d = (float) Math.sqrt((diffx * diffx) + (diffy * diffy));
-			float val = (1 - diffx) + (nDamage());
+			float d = dist(this, n);
+			float val =  d + 2 * (dam * dam * dam);
 			return val;
 			
 		}
 		
+		// 352 is the edge of the screen
 	    public float h(){
-	    	float relativex = _x % 22;
-	    	float ret = 22 - relativex;
-	    	return ret;
+	    	float xh = ((maxRight * 16 + levelScene.mario.x) % 352) - ((_x * 16) % 352);
+	    	//float yh = (15 - _y);
+	    	return xh;
 	    }
 		
 	    public boolean canJumpHigher(Node n, boolean checkParent){
