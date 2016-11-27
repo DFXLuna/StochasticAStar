@@ -18,52 +18,42 @@ import java.util.ArrayList;
 
 public class NoisyAgent implements Agent{
 
+	protected boolean action[] = new boolean[Environment.numberOfButtons];
     protected String name = "NoisyAgent";
     private AStarSimulator sim;
     private ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
-    private int repeat = 2;
-    private int error = 0;
     
-
     public void reset(){
-    	//boolean action[] = {false, true, false, true, true};
-        //plan.add(action);
         requirePlan = true;
-        error = 0;
+        action = new boolean[Environment.numberOfButtons];
         sim = new AStarSimulator();
     }
 
 	// TODO
-    // Jumps are still weird
+    // Simulation becomes inaccurate when we take more than some amount of time to plan
     // Add noise
-	// Check for inaccuracy in simulation
-    // Possibly budget time
+    // Deal with noise
     public boolean[] getAction(Environment observation){
     	byte[][] scene = observation.getLevelSceneObservationZ(0);
     	float[] enemies = observation.getEnemiesFloatPos();
-    	// Advance the sim based on last action.
-    	float[] m = observation.getMarioFloatPos();
     	if(prevAction != null){
     		sim.advanceStep(prevAction);
     	}
     	sim.setLevelPart(scene, enemies);
     	
-
-    	if (sim.levelScene.mario.x != m[0] || sim.levelScene.mario.y != m[1] - 3){
+    	float[] m = observation.getMarioFloatPos();
+    	if (sim.levelScene.mario.x != m[0] && sim.levelScene.mario.y != m[1]){
     		System.out.println("Inaccuracy in simulator position");
-    		error++;
-    		if(error > 5){
-    			sim.levelScene.mario.x = m[0];
-    			sim.levelScene.mario.y = m[1] - 3;
-    			requirePlan = true;
-    		}
+    		sim.levelScene.mario.x = m[0];
+    		sim.levelScene.mario.y = m[0];
+        	sim.setLevelPart(scene, enemies);
+    		requirePlan = true;
 
     	}
     	// We only want to replan if the last plan has expired
     	if(requirePlan){
-    		//reset();
     		plan();
     		requirePlan = false;
     	}
@@ -71,9 +61,7 @@ public class NoisyAgent implements Agent{
     }
     private void plan(){
     	plan.clear();
-    	for(int i = 0; i < repeat; i++){
-    		plan.addAll(sim.getPlan());
-    	}
+    	plan.addAll(sim.getPlan());
     	sim.simNull();
     }
     

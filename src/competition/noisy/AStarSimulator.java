@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import ch.idsia.mario.engine.GlobalOptions;
 import ch.idsia.mario.engine.sprites.Mario;
 import competition.noisy.level.Level;
 
@@ -22,10 +21,10 @@ public class AStarSimulator{
     private float maxSpeed = 10.9090909f;
     public int debugPos = 0;
     
-    public int timeBudget = 20; // ms 
+    public long timeBudget = 220000000; // ns 
     // max actual right is 176
     private int maxRight = 11;
-    // Right side of screen is 352 
+    // Right side of screen is 352 or 22
     
     ////////////////////Initialization///////////////////////
     public AStarSimulator(){
@@ -43,6 +42,9 @@ public class AStarSimulator{
     
     public ArrayList<boolean[]> getPlan(){
     	ArrayList<Node> nodes = search();
+    	if(nodes == null){
+    		return null;
+    	}
     	ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     	for(Node n : nodes){
     		for(int i = 0; i < n._repeat; i++){
@@ -54,6 +56,8 @@ public class AStarSimulator{
     }
     
     public ArrayList<Node> search(){
+    	long startTime = System.nanoTime();
+    	long cTime;
     	if (simState == null){
     		workScene = backupState();
     	}
@@ -69,25 +73,29 @@ public class AStarSimulator{
     	frontier.add(new Pair<Node, Float>(current, 0f));
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
+        	cTime = System.nanoTime();
+
     		
-    		if(dist(current, start) >= 2){
+    		if(dist(current, start) >= 8 || (cTime - startTime) >= (timeBudget - 500000)){
     			//Extract Path
-    			path.add(current);
+    			if((cTime - startTime) >= timeBudget - 500000){
+    				System.out.println("Early Exit");
+    			}
     			while(current.parent() != null){
     				if(current.action() != null){
-    					path.add(current.parent());
+    					path.add(current);
     					current = current.parent();
     				}
     			}
-    			path.remove(current);
     			Collections.reverse(path);
     			return path;
     		}
+    		
     		for(Node next : current.genChildren()){
-    			float new_cost = cost_so_far.get(current) + next.cost(next._x, next._state.mario.xa) + next.h(current);
+    			float new_cost = cost_so_far.get(current) + next.cost(current);
     			if(!cost_so_far.containsKey(next) || new_cost < cost_so_far.get(next)){
     				cost_so_far.put(next, new_cost);
-    				float priority = new_cost;
+    				float priority = new_cost + next.h(next._x, next._state.mario.xa);
     				frontier.add(new Pair<Node, Float>(next, priority));
     			}
     		}
@@ -221,12 +229,14 @@ public class AStarSimulator{
 		private LevelScene _state;
 		private int _repeat = 1;
 		private Node _parent = null;
+		private int _oDist;
 		
 		// Used only for root node
 		public Node(){
 			_state = backupState();
 			_x = _state.mario.x / 16;
 			_y = _state.mario.y / 16;
+			_oDist = 0;
 		}
 		
 		public Node(boolean[] action, LevelScene state, Node parent){
@@ -235,6 +245,7 @@ public class AStarSimulator{
 			_x = _state.mario.x / 16;
 			_y = _state.mario.y / 16;
 			_parent = parent;
+			_oDist = parent.oDist() + 1;
 		}
 		
 		public Node parent(){
@@ -247,6 +258,10 @@ public class AStarSimulator{
 		
 		public LevelScene state(){
 			return _state;
+		}
+		
+		public int oDist(){
+			return _oDist;
 		}
 		
 		public ArrayList<Node> genChildren(){
@@ -273,18 +288,16 @@ public class AStarSimulator{
 	    	return toReturn;
 	    }
 		
-		// cost and h are flipped but the algorithm performs better that way
 		// Damage times how far mario has come
-		public float h(Node n){
-			float d  = (nDamage() - n.nDamage()); 
-			float od = (1000000 - 100 * _x);
-			return d * od;
+		public float cost(Node n){
+			float d  = 1000 * (nDamage() - n.nDamage()); 
+			float od = (1000000 - 100 * oDist());
+			return (d * od);
 		}
 		
-		// Distance from some point waaaaaaay off to the right - how far mario has come and can go.
-		public float cost(float currx, float currxa){
-			float toReturn = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed - 1000; 
-			return toReturn;
+		public float h(float currx, float currxa){
+			float h = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed - 1000;
+			return h;
 		}
 		
 	    public boolean canJumpHigher(Node n, boolean checkParent){

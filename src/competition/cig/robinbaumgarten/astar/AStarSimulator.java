@@ -106,19 +106,7 @@ public class AStarSimulator
 			int initialDamage = getMarioDamage();
 	    	for (int i = 0; i < repetitions; i++)
 	    	{
-	    		/*if (debugPos < 1000)
-	    		{
-	    			GlobalOptions.Pos[debugPos][0] = (int) levelScene.mario.x;
-	    			GlobalOptions.Pos[debugPos][1] = (int) levelScene.mario.y;
-	    			debugPos++;
-	    		}*/
 	    		advanceStep(action);
-	    		/*if (debugPos < 1000)
-	    		{
-	    			GlobalOptions.Pos[debugPos][0] = (int) levelScene.mario.x;
-	    			GlobalOptions.Pos[debugPos][1] = (int) levelScene.mario.y;
-	    			debugPos++;
-	    		}*/
 	    		if (debugPos > 1000)
 	    			debugPos = 0;
 	    	}
