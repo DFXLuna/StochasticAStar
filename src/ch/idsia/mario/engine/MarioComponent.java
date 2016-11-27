@@ -442,4 +442,5 @@ public class MarioComponent extends JComponent implements Runnable, /*KeyListene
     {
         return mario.carried != null;
     }
+
 }

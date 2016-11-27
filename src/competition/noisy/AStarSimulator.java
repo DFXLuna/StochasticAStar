@@ -21,7 +21,7 @@ public class AStarSimulator{
     private float maxSpeed = 10.9090909f;
     public int debugPos = 0;
     
-    public long timeBudget = 220000000; // ns 
+    public long timeBudget = 10000000; // ns 
     // max actual right is 176
     private int maxRight = 11;
     // Right side of screen is 352 or 22
@@ -42,9 +42,6 @@ public class AStarSimulator{
     
     public ArrayList<boolean[]> getPlan(){
     	ArrayList<Node> nodes = search();
-    	if(nodes == null){
-    		return null;
-    	}
     	ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     	for(Node n : nodes){
     		for(int i = 0; i < n._repeat; i++){
@@ -74,11 +71,10 @@ public class AStarSimulator{
     	while(!frontier.isEmpty()){
     		current = getBest(frontier);
         	cTime = System.nanoTime();
-
     		
-    		if(dist(current, start) >= 8 || (cTime - startTime) >= (timeBudget - 500000)){
+    		if(dist(current, start) >= 2 || (cTime - startTime) >= (timeBudget - 1000000)){
     			//Extract Path
-    			if((cTime - startTime) >= timeBudget - 500000){
+    			if((cTime - startTime) >= timeBudget - 1000000){
     				System.out.println("Early Exit");
     			}
     			while(current.parent() != null){
@@ -290,13 +286,16 @@ public class AStarSimulator{
 		
 		// Damage times how far mario has come
 		public float cost(Node n){
-			float d  = 1000 * (nDamage() - n.nDamage()); 
+			float d  = (nDamage() - n.nDamage()); 
 			float od = (1000000 - 100 * oDist());
-			return (d * od);
+			return 2 * (d * od)/( 1 + 
+					(n._state.powerUpsCollected - _state.powerUpsCollected) + 
+					(n._state.enemiesJumpedOn   - _state.enemiesJumpedOn)   +
+					(n._state.coinsCollected    - _state.coinsCollected));
 		}
 		
 		public float h(float currx, float currxa){
-			float h = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed - 1000;
+			float h = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed ;
 			return h;
 		}
 		
@@ -317,17 +316,17 @@ public class AStarSimulator{
 				toReturn.add(createAction(false, false, false, true, false));
 				toReturn.add(createAction(false, false, false, true, true ));
 				// Jump Left
-				//toReturn.add(createAction(true, false, false, true, false));
-				//toReturn.add(createAction(true, false, false, true, true ));
+				toReturn.add(createAction(true, false, false, true, false));
+				toReturn.add(createAction(true, false, false, true, true ));
 			}
 			// Right
 			toReturn.add(createAction(false, true, false, false, false));
 			toReturn.add(createAction(false, true, false, false, true ));
 			// Left
-			//toReturn.add(createAction(true, false, false, false, false));
-			//toReturn.add(createAction(true, false, false, false, true ));
+			toReturn.add(createAction(true, false, false, false, false));
+			toReturn.add(createAction(true, false, false, false, true ));
 			// duck
-			toReturn.add(createAction(false, false, true, false, false));
+			//toReturn.add(createAction(false, false, true, false, false));
 			return toReturn;
 	    }
 	    

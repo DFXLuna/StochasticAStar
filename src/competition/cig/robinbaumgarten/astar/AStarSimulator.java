@@ -482,10 +482,6 @@ public class AStarSimulator
         {
         	currentActionPlan = extractPlan(); 
         	if (currentActionPlan.size() < planAhead)
-        	{
-        		if (levelScene.verbose > 2) System.out.println("Warning!! currentActionPlan smaller than planAhead! plansize: "+currentActionPlan.size());
-        		planAhead = currentActionPlan.size();
-        	}
         	
         	// simulate ahead to predicted future state, and then plan for this future state 
         	if (levelScene.verbose > 3) System.out.println("Advancing current state ... ");

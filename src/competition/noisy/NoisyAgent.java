@@ -5,6 +5,7 @@ import ch.idsia.mario.environments.Environment;
 import ch.idsia.ai.agents.Agent;
 import competition.noisy.AStarSimulator.*;
 import java.util.ArrayList;
+import java.util.Random;
 /**
  * User: Matt Grant 
  * Date: 11/5/2016
@@ -30,7 +31,7 @@ public class NoisyAgent implements Agent{
         action = new boolean[Environment.numberOfButtons];
         sim = new AStarSimulator();
     }
-
+    // Interestingly, the program has a memory leak somewhere.
 	// TODO
     // Simulation becomes inaccurate when we take more than some amount of time to plan
     // Add noise
@@ -44,16 +45,15 @@ public class NoisyAgent implements Agent{
     	sim.setLevelPart(scene, enemies);
     	
     	float[] m = observation.getMarioFloatPos();
-    	if (sim.levelScene.mario.x != m[0] && sim.levelScene.mario.y != m[1]){
+    	if (sim.levelScene.mario.x - m[0] > 0.1f){
     		System.out.println("Inaccuracy in simulator position");
+    		System.out.println("Expected XY: " + sim.levelScene.mario.x + " " + sim.levelScene.mario.y);
+    		System.out.println("Actual XY:   " + m[0] + " " + m[1]);
     		sim.levelScene.mario.x = m[0];
-    		sim.levelScene.mario.y = m[0];
-        	sim.setLevelPart(scene, enemies);
-    		requirePlan = true;
-
+    		sim.levelScene.mario.y = m[1];
     	}
     	// We only want to replan if the last plan has expired
-    	if(requirePlan){
+    	if(true){
     		plan();
     		requirePlan = false;
     	}
@@ -65,6 +65,19 @@ public class NoisyAgent implements Agent{
     	sim.simNull();
     }
     
+    private void noise(boolean[] action){
+    	Random rand = new Random();
+    	int n = rand.nextInt(101) + 1;
+    	if(n > 90){
+        	System.out.println("Noise");
+    		for(boolean b : action){
+    			if(b == true){
+    				b = false;
+    			}
+    		}
+    	}
+    }
+    
     public boolean[] popAction(){
     	if(plan.size() == 1){
     		requirePlan = true;
@@ -72,6 +85,7 @@ public class NoisyAgent implements Agent{
 		boolean[] toReturn = plan.get(0);
 		prevAction = toReturn;
 		plan.remove(0);
+		noise(toReturn);
 		return toReturn;
     }
     
