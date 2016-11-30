@@ -31,15 +31,14 @@ public class AStarSimulator{
     	initialiseSimulator();
     }
 	
-    public void initialiseSimulator()
-	{
+    public void initialiseSimulator(){
 		levelScene = new LevelScene();
 		levelScene.init();	
 		levelScene.level = new Level(1500,15);
 		workScene = backupState();
 	}
-    /////////////////////////////////////////////////////////
     
+    ////////////////////////Search///////////////////////////  
     public ArrayList<boolean[]> getPlan(){
     	ArrayList<Node> nodes = search();
     	ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
@@ -55,12 +54,14 @@ public class AStarSimulator{
     public ArrayList<Node> search(){
     	long startTime = System.nanoTime();
     	long cTime;
+    	// This is used to pass states between searches
     	if (simState == null){
     		workScene = backupState();
     	}
     	else{
     		workScene = simState;
     	}
+    	// Standard implementation of A* with early exit
     	ArrayList<Node> path = new ArrayList<Node>();
     	HashMap<Node, Float> cost_so_far = new HashMap<Node, Float>();
     	ArrayList< Pair<Node, Float> > frontier = new ArrayList<Pair <Node, Float> >();
@@ -100,6 +101,7 @@ public class AStarSimulator{
     	return null;
     }
 
+    //////////////////////Simulation/////////////////////////
 	public void simStep(boolean[] action){
 		workScene.mario.setKeys(action);
 		workScene.tick();
@@ -119,8 +121,13 @@ public class AStarSimulator{
 		levelScene.mario.setKeys(action);
 		levelScene.tick();
 	}
+	public void setLevelPart(byte[][] levelPart, float[] enemies){
+		levelScene.setLevelScene(levelPart);
+		levelScene.setEnemies(enemies);
+	}
 	
     ////////////////////Utility Functions////////////////////
+	// Used to reset state after a search has been completed
     public void simNull(){
     	simState = null;
     }
@@ -196,28 +203,25 @@ public class AStarSimulator{
     	  +10.90909091*y-88.26446282+9.090909091*s0);
     }
     
-    public float[] estimateMaximumForwardMovement(float currentAccel, boolean[] action, int ticks){
-    	float dist = 0;
-    	float runningSpeed =  action[Mario.KEY_SPEED] ? 1.2f : 0.6f;
-    	int dir = 0;
-    	if (action[Mario.KEY_LEFT]) dir = -1;
-    	if (action[Mario.KEY_RIGHT]) dir = 1;
-    	for (int i = 0; i < ticks; i++)
-    	{
-    		currentAccel += runningSpeed * dir;
-    		dist += currentAccel;
-    		currentAccel *= 0.89f;
-    	}    	
-    	float[] ret = new float[2];
-    	ret[0] = dist;
-    	ret[1] = currentAccel;
-    	return ret;
-    }
-    
-	public void setLevelPart(byte[][] levelPart, float[] enemies){
-		levelScene.setLevelScene(levelPart);
-		levelScene.setEnemies(enemies);
-	}
+//    public float[] estimateMaximumForwardMovement(float currentAccel, boolean[] action, int ticks){
+//    	float dist = 0;
+//    	float runningSpeed =  action[Mario.KEY_SPEED] ? 1.2f : 0.6f;
+//    	int dir = 0;
+//    	if (action[Mario.KEY_LEFT]) dir = -1;
+//    	if (action[Mario.KEY_RIGHT]) dir = 1;
+//    	for (int i = 0; i < ticks; i++)
+//    	{
+//    		currentAccel += runningSpeed * dir;
+//    		dist += currentAccel;
+//    		currentAccel *= 0.89f;
+//    	}    	
+//    	float[] ret = new float[2];
+//    	ret[0] = dist;
+//    	ret[1] = currentAccel;
+//    	return ret;
+//    }
+//    
+
     /////////////////////////////////////////////////////////
 	public class Node{
 		private boolean[] _action = null;
@@ -226,7 +230,7 @@ public class AStarSimulator{
 		private int _repeat = 1;
 		private Node _parent = null;
 		private int _oDist;
-		
+		//////////////////Initialization/////////////////////
 		// Used only for root node
 		public Node(){
 			_state = backupState();
@@ -244,22 +248,7 @@ public class AStarSimulator{
 			_oDist = parent.oDist() + 1;
 		}
 		
-		public Node parent(){
-			return _parent;
-		}
-		
-		public boolean[] action(){
-			return _action;
-		}
-		
-		public LevelScene state(){
-			return _state;
-		}
-		
-		public int oDist(){
-			return _oDist;
-		}
-		
+		//////////////////////Search/////////////////////////
 		public ArrayList<Node> genChildren(){
 			if(_state == null){
 				System.out.println("No state given");
@@ -275,30 +264,37 @@ public class AStarSimulator{
 			return children;
 		}
 		
+		///////////////////////Cost//////////////////////////
 		private float nDamage(){
 			float toReturn = _state.mario.damage;
 	    	if (_state.level.isGap[(int) (_state.mario.x/16)] &&
 	    	_state.mario.y >= _state.level.gapHeight[(int) (_state.mario.x/16)]*16){
-	    		toReturn += 5;
+	    		toReturn += 1000;
 	    	}
 	    	return toReturn;
 	    }
 		
 		// Damage times how far mario has come
+		// This allows nodes to occasionally have the same cost so a tiebreaker
+		// is used in the frontier's get function
 		public float cost(Node n){
 			float d  = (nDamage() - n.nDamage()); 
 			float od = (1000000 - 100 * oDist());
-			return 2 * (d * od)/( 1 + 
+			return d * (d * od)/( 1 + 
 					(n._state.powerUpsCollected - _state.powerUpsCollected) + 
 					(n._state.enemiesJumpedOn   - _state.enemiesJumpedOn)   +
 					(n._state.coinsCollected    - _state.coinsCollected));
 		}
 		
+		// Distance from some point way off screen over maxSpeed 
 		public float h(float currx, float currxa){
-			float h = (100000 - (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed ;
+			int scale = 1000;
+			float h = (100000 - scale
+			- (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed;
 			return h;
 		}
 		
+		//////////////////////Utility////////////////////////
 	    public boolean canJumpHigher(Node n, boolean checkParent){
 	    	if (n._parent != null && checkParent
 	    			&& canJumpHigher(n._parent, false))
@@ -340,7 +336,24 @@ public class AStarSimulator{
 	    	action[Mario.KEY_SPEED] = speed;
 	    	return action;
 	    }
+		//////////////////////Accessor///////////////////////
+		public Node parent(){
+			return _parent;
+		}
+	
+		public boolean[] action(){
+			return _action;
+		}
+	
+		public LevelScene state(){
+			return _state;
+		}
+	
+		public int oDist(){
+			return _oDist;
+		}
 	}
+	
 	public class Pair<A,B>{
 		public A a;
 		public B b;

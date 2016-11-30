@@ -45,7 +45,8 @@ public class NoisyAgent implements Agent{
     	sim.setLevelPart(scene, enemies);
     	
     	float[] m = observation.getMarioFloatPos();
-    	if (sim.levelScene.mario.x - m[0] > 0.1f){
+    	if (sim.levelScene.mario.x - m[0] > 0.1f || 
+    		sim.levelScene.mario.y - m[1] > 0.1f ){
     		System.out.println("Inaccuracy in simulator position");
     		System.out.println("Expected XY: " + sim.levelScene.mario.x + " " + sim.levelScene.mario.y);
     		System.out.println("Actual XY:   " + m[0] + " " + m[1]);
@@ -67,15 +68,16 @@ public class NoisyAgent implements Agent{
     
     private void noise(boolean[] action){
     	Random rand = new Random();
-    	int n = rand.nextInt(101) + 1;
-    	if(n > 90){
-        	System.out.println("Noise");
-    		for(boolean b : action){
-    			if(b == true){
-    				b = false;
-    			}
-    		}
-    	}
+//    	
+//    	int n = rand.nextInt(101) + 1;
+//    	if(n > 90){
+//        	System.out.println("Noise");
+//    		for(boolean b : action){
+//    			if(b == true){
+//    				b = false;
+//    			}
+//    		}
+//    	}
     }
     
     public boolean[] popAction(){
