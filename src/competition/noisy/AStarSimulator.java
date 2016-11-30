@@ -100,6 +100,22 @@ public class AStarSimulator{
     	System.out.println("Error in a*!");
     	return null;
     }
+    
+    public Node getBest(ArrayList< Pair<Node, Float> > frontier){
+    	Float min = frontier.get(0).b;
+    	int mini = 0;
+    	for(int i = 0; i < frontier.size(); i++){
+    		Float check = frontier.get(i).b;
+    		if(check < min){
+    			min = check;
+    			mini = i;
+    		}
+    	}
+    	Node toReturn = frontier.get(mini).a;
+    	frontier.remove(mini);
+    	return toReturn;
+    }
+    
 
     //////////////////////Simulation/////////////////////////
 	public void simStep(boolean[] action){
@@ -179,21 +195,6 @@ public class AStarSimulator{
     	return s;
     }
     
-    public Node getBest(ArrayList< Pair<Node, Float> > frontier){
-    	Float min = frontier.get(0).b;
-    	int mini = 0;
-    	for(int i = 0; i < frontier.size(); i++){
-    		Float check = frontier.get(i).b;
-    		if(check < min){
-    			min = check;
-    			mini = i;
-    		}
-    	}
-    	Node toReturn = frontier.get(mini).a;
-    	frontier.remove(mini);
-    	return toReturn;
-    }
-    
     // distance covered at maximum acceleration with initialSpeed for ticks timesteps 
     private float maxForwardMovement(float initialSpeed, int ticks){
     	float y = ticks;
@@ -202,25 +203,6 @@ public class AStarSimulator{
     	  -9.090909091*s0*Math.pow(0.89,y+1)
     	  +10.90909091*y-88.26446282+9.090909091*s0);
     }
-    
-//    public float[] estimateMaximumForwardMovement(float currentAccel, boolean[] action, int ticks){
-//    	float dist = 0;
-//    	float runningSpeed =  action[Mario.KEY_SPEED] ? 1.2f : 0.6f;
-//    	int dir = 0;
-//    	if (action[Mario.KEY_LEFT]) dir = -1;
-//    	if (action[Mario.KEY_RIGHT]) dir = 1;
-//    	for (int i = 0; i < ticks; i++)
-//    	{
-//    		currentAccel += runningSpeed * dir;
-//    		dist += currentAccel;
-//    		currentAccel *= 0.89f;
-//    	}    	
-//    	float[] ret = new float[2];
-//    	ret[0] = dist;
-//    	ret[1] = currentAccel;
-//    	return ret;
-//    }
-//    
 
     /////////////////////////////////////////////////////////
 	public class Node{
