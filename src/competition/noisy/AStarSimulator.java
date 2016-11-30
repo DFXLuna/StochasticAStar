@@ -101,7 +101,7 @@ public class AStarSimulator{
     	return null;
     }
     
-    public Node getBest(ArrayList< Pair<Node, Float> > frontier){
+    private Node getBest(ArrayList< Pair<Node, Float> > frontier){
     	Float min = frontier.get(0).b;
     	int mini = 0;
     	for(int i = 0; i < frontier.size(); i++){
@@ -110,12 +110,37 @@ public class AStarSimulator{
     			min = check;
     			mini = i;
     		}
+//    		else if (check == min){
+//    			if(!keepMin(frontier.get(mini).a, frontier.get(i).a)){
+//    				min = check;
+//    				mini = i;
+//    			}
+//    		}
     	}
     	Node toReturn = frontier.get(mini).a;
     	frontier.remove(mini);
     	return toReturn;
     }
     
+//    // Tie Breaker. Choose node with largest Y
+//    private boolean keepMin(Node min, Node check){
+//    	
+//    	if(min._x == check._x){
+//        	//System.out.println("Tie.\n" + "Min: " + min._x + " " + min._y + '\n' +
+//        	    	//"Check: " + check._x + " " + check._y);
+//    		if(min._y < check._y){
+//    			System.out.println("Tie broken");
+//    			return false;
+//    		}
+//    	}
+//    	else{
+//    		if(min._x < check._x){
+//    			System.out.println("min x smaller");
+//    			return false;
+//    		}		
+//    	}
+//    	return true;
+//    }
 
     //////////////////////Simulation/////////////////////////
 	public void simStep(boolean[] action){
@@ -263,19 +288,23 @@ public class AStarSimulator{
 		// This allows nodes to occasionally have the same cost so a tiebreaker
 		// is used in the frontier's get function
 		public float cost(Node n){
-			float d  = (nDamage() - n.nDamage() + 1); 
+			if(_state.mario.status == 0){
+				return Float.POSITIVE_INFINITY;
+			}
+			float d  = (nDamage() - n.nDamage());
 			float od = (1000000 - 100 * oDist());
 			float g = gap();
-			return (g * g) * (300 * d * od)/( 1 + 
+			return (g * g) * (d * od)/( 1 + 
 					(n._state.powerUpsCollected - _state.powerUpsCollected) + 
 					(n._state.enemiesJumpedOn   - _state.enemiesJumpedOn)   +
 					(n._state.coinsCollected    - _state.coinsCollected));
 		}
 		
-		// Distance from some point way off screen over maxSpeed 
+		// Distance to the location of the goal in x
+		// Optional scale might affect performance at end of game
 		public float h(float currx, float currxa){
 			int scale = 1000;
-			float h = (100000 - scale
+			float h = (100000 //- scale
 			- (maxForwardMovement(currxa, 1000) + currx)) / maxSpeed;
 			return h;
 		}
@@ -308,7 +337,7 @@ public class AStarSimulator{
 			toReturn.add(createAction(true, false, false, false, false));
 			toReturn.add(createAction(true, false, false, false, true ));
 			// duck
-			//toReturn.add(createAction(false, false, true, false, false));
+			toReturn.add(createAction(false, false, true, false, false));
 			return toReturn;
 	    }
 	    

@@ -39,20 +39,20 @@ public class Play {
      *
      * @since   iMario1.0
      */
-
+	static int trials = 10;
     public static void main(String[] args) {
         EvaluationOptions options = new CmdLineOptions(args);
-        options.setAgent(new NoisyAgent());
-        //options.setAgent(new AStarAgent());
-        options.setVisualization(true);
-        Task task = new ProgressTask(options);
-//        options.setMaxFPS(false);
-//        options.setNumberOfTrials(1);
-        options.setLevelRandSeed((int) (Math.random () * Integer.MAX_VALUE));
-        options.setLevelDifficulty(3);
-        task.setOptions(options);
+        for(int i = 0; i < trials; i++){
+        	options.setAgent(new NoisyAgent());
+        	options.setVisualization(true);
+        	Task task = new ProgressTask(options);
+        	options.setLevelRandSeed((int) (Math.random () * Integer.MAX_VALUE));
+        	options.setLevelDifficulty(3);
+        	task.setOptions(options);
+        
 
-        System.out.println ("Score: " + task.evaluate(options.getAgent())[0]);
-        System.out.println("Simulation/Play finished");       
+        	System.out.println ("Score: " + task.evaluate(options.getAgent())[0]);
+        	System.out.println("Simulation/Play finished");
+        }
     }
 }
