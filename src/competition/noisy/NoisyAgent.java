@@ -32,9 +32,11 @@ public class NoisyAgent implements Agent{
         sim = new AStarSimulator();
     }
     // Interestingly, the program has a memory leak somewhere.
-	// TODO
     // Simulation becomes inaccurate when we take more than some amount of time to plan
-    // Add noise
+	// TODO
+    // TieBreaker
+    // Estimate Trajectory
+    // Noise types: Cancel, Random, Markovian
     // Deal with noise
     public boolean[] getAction(Environment observation){
     	byte[][] scene = observation.getLevelSceneObservationZ(0);

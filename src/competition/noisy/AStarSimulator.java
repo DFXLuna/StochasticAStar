@@ -266,21 +266,25 @@ public class AStarSimulator{
 		
 		///////////////////////Cost//////////////////////////
 		private float nDamage(){
-			float toReturn = _state.mario.damage;
+	    	return _state.mario.damage;
+	    }
+		
+		private float gap(){
 	    	if (_state.level.isGap[(int) (_state.mario.x/16)] &&
 	    	_state.mario.y >= _state.level.gapHeight[(int) (_state.mario.x/16)]*16){
-	    		toReturn += 1000;
+	    		return 1000;
 	    	}
-	    	return toReturn;
-	    }
+	    	return 0;
+		}
 		
 		// Damage times how far mario has come
 		// This allows nodes to occasionally have the same cost so a tiebreaker
 		// is used in the frontier's get function
 		public float cost(Node n){
-			float d  = (nDamage() - n.nDamage()); 
+			float d  = (nDamage() - n.nDamage() + 1); 
 			float od = (1000000 - 100 * oDist());
-			return d * (d * od)/( 1 + 
+			float g = gap();
+			return (g * g) * (300 * d * od)/( 1 + 
 					(n._state.powerUpsCollected - _state.powerUpsCollected) + 
 					(n._state.enemiesJumpedOn   - _state.enemiesJumpedOn)   +
 					(n._state.coinsCollected    - _state.coinsCollected));
