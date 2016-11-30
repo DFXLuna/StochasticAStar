@@ -21,10 +21,12 @@ public class AStarSimulator{
     private float maxSpeed = 10.9090909f;
     public int debugPos = 0;
     
-    public long timeBudget = 10000000; // ns 
+    public long timeBudget = 10000000; // ns
+    public long postSearchReserve = 1000000;
     // max actual right is 176
     private int maxRight = 11;
     // Right side of screen is 352 or 22
+    private static boolean VERBOSE = false;
     
     ////////////////////Initialization///////////////////////
     public AStarSimulator(){
@@ -73,10 +75,13 @@ public class AStarSimulator{
     		current = getBest(frontier);
         	cTime = System.nanoTime();
     		
-    		if(dist(current, start) >= 2 || (cTime - startTime) >= (timeBudget - 1000000)){
+    		if(dist(current, start) >= 2 || 
+    		(cTime - startTime) >= (timeBudget - postSearchReserve)){
     			//Extract Path
     			if((cTime - startTime) >= timeBudget - 1000000){
-    				System.out.println("Early Exit");
+    				if(VERBOSE){
+    					System.out.println("Early Exit");
+    				}
     			}
     			while(current.parent() != null){
     				if(current.action() != null){
@@ -97,7 +102,6 @@ public class AStarSimulator{
     			}
     		}
     	}
-    	System.out.println("Error in a*!");
     	return null;
     }
     
@@ -110,37 +114,11 @@ public class AStarSimulator{
     			min = check;
     			mini = i;
     		}
-//    		else if (check == min){
-//    			if(!keepMin(frontier.get(mini).a, frontier.get(i).a)){
-//    				min = check;
-//    				mini = i;
-//    			}
-//    		}
     	}
     	Node toReturn = frontier.get(mini).a;
     	frontier.remove(mini);
     	return toReturn;
     }
-    
-//    // Tie Breaker. Choose node with largest Y
-//    private boolean keepMin(Node min, Node check){
-//    	
-//    	if(min._x == check._x){
-//        	//System.out.println("Tie.\n" + "Min: " + min._x + " " + min._y + '\n' +
-//        	    	//"Check: " + check._x + " " + check._y);
-//    		if(min._y < check._y){
-//    			System.out.println("Tie broken");
-//    			return false;
-//    		}
-//    	}
-//    	else{
-//    		if(min._x < check._x){
-//    			System.out.println("min x smaller");
-//    			return false;
-//    		}		
-//    	}
-//    	return true;
-//    }
 
     //////////////////////Simulation/////////////////////////
 	public void simStep(boolean[] action){

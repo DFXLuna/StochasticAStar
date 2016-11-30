@@ -25,6 +25,7 @@ public class NoisyAgent implements Agent{
     private ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
+    private static boolean VERBOSE = false;
     
     public void reset(){
         requirePlan = true;
@@ -33,11 +34,13 @@ public class NoisyAgent implements Agent{
     }
     // Interestingly, the program has a memory leak somewhere.
     // Simulation becomes inaccurate when we take more than some amount of time to plan
+    
 	// TODO
-    // TieBreaker
-    // Estimate Trajectory
+    // Determine whether always replan or sparse plan is better
     // Noise types: Cancel, Random, Markovian
     // Deal with noise
+    // Estimate Trajectory (Maybe)
+    // Update README.MD to link to specific lines of code
     public boolean[] getAction(Environment observation){
     	byte[][] scene = observation.getLevelSceneObservationZ(0);
     	float[] enemies = observation.getEnemiesFloatPos();
@@ -48,10 +51,12 @@ public class NoisyAgent implements Agent{
     	
     	float[] m = observation.getMarioFloatPos();
     	if (sim.levelScene.mario.x - m[0] > 0.1f || 
-    		sim.levelScene.mario.y - m[1] > 0.1f ){
-    		System.out.println("Inaccuracy in simulator position");
-    		System.out.println("Expected XY: " + sim.levelScene.mario.x + " " + sim.levelScene.mario.y);
-    		System.out.println("Actual XY:   " + m[0] + " " + m[1]);
+    	sim.levelScene.mario.y - m[1] > 0.1f ){
+    		if(VERBOSE){
+    			System.out.println("Inaccuracy in simulator position");
+    			System.out.println("Expected XY: " + sim.levelScene.mario.x + " " + sim.levelScene.mario.y);
+    			System.out.println("Actual XY:   " + m[0] + " " + m[1]);
+    		}
     		sim.levelScene.mario.x = m[0];
     		sim.levelScene.mario.y = m[1];
     	}

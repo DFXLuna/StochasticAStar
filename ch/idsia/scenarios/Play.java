@@ -7,7 +7,6 @@ import ch.idsia.ai.tasks.Task;
 import ch.idsia.tools.CmdLineOptions;
 import ch.idsia.tools.EvaluationOptions;
 import competition.noisy.NoisyAgent;
-import competition.cig.robinbaumgarten.*;
 
 /**
  * Created by IntelliJ IDEA.
