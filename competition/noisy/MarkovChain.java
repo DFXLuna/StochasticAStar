@@ -57,12 +57,6 @@ public class MarkovChain {
 			calcProb(prior);
 		}
 		
-		// Prediction node
-		// Only applies transition model
-		public Node(float[] prior){
-			_prob = trans(prior);
-		}
-		
 		private void calcProb(float[] prior){
 			float[] prob = {prior[0], prior[1]};
 			prob = trans(prob);
@@ -103,7 +97,7 @@ public class MarkovChain {
 		public float[] predict(int repeat){
 			// Create an estimation node and run the trans model
 			float[] toReturn = {_prob[0], _prob[1]};
-			for(int i = 0; i < repeat - 1; i++){
+			for(int i = 0; i < repeat; i++){
 				toReturn = trans(toReturn);
 			}
 			return toReturn;
