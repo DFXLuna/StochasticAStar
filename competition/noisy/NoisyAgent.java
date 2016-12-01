@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Random;
 /**
  * User: Matt Grant 
- * Date: 11/5/2016
+ * Date: 5 Noc 2016
  * Package: competition.noisy
  */
 // Some people write disgusting code. We call those people Java Devs
@@ -26,6 +26,11 @@ public class NoisyAgent implements Agent{
     public boolean requirePlan = true;
     private boolean[] prevAction = null;
     private static boolean VERBOSE = false;
+    // 0 = No noise
+    // 1 = Cancellation
+    // 2 = Randomization
+    // 3 = Markovian
+    private static int NOISE = 0;
     
     public void reset(){
         requirePlan = true;
@@ -39,7 +44,9 @@ public class NoisyAgent implements Agent{
     // Determine whether always replan or sparse plan is better
     // Noise types: Cancel, Random, Markovian
     // Deal with noise
+    // Do stats
     // Estimate Trajectory (Maybe)
+    // Create project site to hold data
     // Update README.MD to link to specific lines of code
     public boolean[] getAction(Environment observation){
     	byte[][] scene = observation.getLevelSceneObservationZ(0);
@@ -73,29 +80,54 @@ public class NoisyAgent implements Agent{
     	sim.simNull();
     }
     
-    private void noise(boolean[] action){
-    	Random rand = new Random();
-//    	
-//    	int n = rand.nextInt(101) + 1;
-//    	if(n > 90){
-//        	System.out.println("Noise");
-//    		for(boolean b : action){
-//    			if(b == true){
-//    				b = false;
-//    			}
-//    		}
-//    	}
-    }
-    
-    public boolean[] popAction(){
+    private boolean[] popAction(){
     	if(plan.size() == 1){
     		requirePlan = true;
     	}
 		boolean[] toReturn = plan.get(0);
 		prevAction = toReturn;
 		plan.remove(0);
-		noise(toReturn);
+		if(NOISE > 0){
+			noise(toReturn);
+		}
 		return toReturn;
+    }
+    
+    private void noise(boolean[] action){
+    	Random rand = new Random();
+    	
+    	int n = rand.nextInt(101) + 1;
+    	if(n > 90){
+    		if(NOISE == 1){
+    			// Cancellation
+        		for(boolean b : action){
+        			if(b == true){
+        				b = false;
+        			}
+        		}
+    		}
+    		else if(NOISE == 2){
+    			// Randomization
+        		for(boolean b : action){
+        			int r = rand.nextInt(2);
+        			if(r == 1){
+        				b = true;
+        			}
+        			else{
+        				b = false;
+        			}
+        		}
+    		}
+    		else if(NOISE == 3){
+    			// Markovian noise
+    			mNoise(action);
+    		}
+    	}
+    }
+    
+    private boolean[] mNoise(boolean[] action){
+    	
+    	return action;
     }
     
     public AGENT_TYPE getType() {

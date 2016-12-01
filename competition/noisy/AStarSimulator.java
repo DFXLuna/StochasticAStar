@@ -208,7 +208,7 @@ public class AStarSimulator{
     }
 
     /////////////////////////////////////////////////////////
-	public class Node{
+	private class Node{
 		private boolean[] _action = null;
 		public float _x, _y;
 		private LevelScene _state;
