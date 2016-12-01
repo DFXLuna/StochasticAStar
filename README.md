@@ -18,7 +18,7 @@ On every call to NoisyAgent.getAction():
 * After noise is applied, the resulting action is returned.
 
 ## Implementation Details
-The agent consists of three parts: [NoisyAgent](../master/competition/noisy/NoisyAgent.java), [AStarSimulator](../master/competition/noisy/AStarSimulator.java) and [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node
+The agent consists of four parts: [NoisyAgent](../master/competition/noisy/NoisyAgent.java), [AStarSimulator](../master/competition/noisy/AStarSimulator.java), [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node and [MarkovChain](../master/competition/noisy/MarkovChain.java)
 ### [AStarSimulator](../master/competition/noisy/AStarSimulator.java)
 * The simulator is based on [Robin Baumgarten's simulator](https://github.com/RobinB/mario-astar-robinbaumgarten). Everything was stripped except for the parts of his code which were either modified pieces of engine code or utility functions. Most magic numbers that pertain to the engine were also taken.
 * The simulator acts as a front end to a copy of [ch.idsia.mario.engine.LevelScene](../master/ch/idsia/mario/engine/LevelScene.java). The copy is stored in [competition.noisy.LevelScene](../master/competition/noisy/LevelScene.java). This version has all of the rendering code removed. Other than that it's almost identical to the engine's LevelScene and behaves the same way.
@@ -41,6 +41,9 @@ The agent consists of three parts: [NoisyAgent](../master/competition/noisy/Nois
 * Cancellation ignores an action.
 * Randomization ignores an action and sets a new random action.
 * Markovian noise bases the chance to change an action on the previous state. This makes it easier to implement and test a Markov Chain model for estimating noise.
+
+### [MarkovChain](../master/competition/noisy/MarkovChain.java)
+* This is just the most basic implementation of a Markov Chain. It implements state estimation and prediction
 
 ## To create your own agent
 * Get a copy of the [unmodified competition source](http://julian.togelius.com/mariocompetition2009/marioai.zip).
