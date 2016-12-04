@@ -6,28 +6,31 @@ package competition.noisy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 
 import ch.idsia.mario.engine.sprites.Mario;
 import competition.noisy.level.Level;
+import competition.noisy.MarkovChain;
 
 
 // Grid position is actual position / 16
-// Don't ask
-public class AStarSimulator{
-	
+
+// Verbosity is assigned in competition.noisy.Verbose interface
+public class AStarSimulator implements Verbose{
     public LevelScene levelScene;
     public LevelScene workScene;
     private LevelScene simState = null;
-    private float maxSpeed = 10.9090909f;
-    public int debugPos = 0;
     
-    public long timeBudget = 10000000; // ns
-    public long postSearchReserve = 1000000;
+    private float maxSpeed = 10.9090909f;
+    private long timeBudget = 10000000; // ns
+    private long postSearchReserve = 1000000; //ns
+    private float goal = 2.0f;
     // max actual right is 176
     private int maxRight = 11;
     // Right side of screen is 352 or 22
-    private static boolean VERBOSE = false;
-    
+    //////////////Markov Vars///////////////
+    Random rand = new Random();
+
     ////////////////////Initialization///////////////////////
     public AStarSimulator(){
     	initialiseSimulator();
@@ -41,8 +44,14 @@ public class AStarSimulator{
 	}
     
     ////////////////////////Search///////////////////////////  
-    public ArrayList<boolean[]> getPlan(){
-    	ArrayList<Node> nodes = search();
+    public ArrayList<boolean[]> getPlan(MarkovChain mc){
+    	ArrayList<Node> nodes;
+    	if(mc != null){
+    		nodes = msearch(mc);
+    	}
+    	else{
+    		nodes = search();
+    	}
     	ArrayList<boolean[]> plan = new ArrayList<boolean[]>();
     	for(Node n : nodes){
     		for(int i = 0; i < n._repeat; i++){
@@ -53,7 +62,8 @@ public class AStarSimulator{
     	return plan;
     }
     
-    public ArrayList<Node> search(){
+    @SuppressWarnings("unused")
+	public ArrayList<Node> search(){
     	long startTime = System.nanoTime();
     	long cTime;
     	// This is used to pass states between searches
@@ -75,14 +85,70 @@ public class AStarSimulator{
     		current = getBest(frontier);
         	cTime = System.nanoTime();
     		
-    		if(dist(current, start) >= 2 || 
+    		if(dist(current, start) >= goal || 
     		(cTime - startTime) >= (timeBudget - postSearchReserve)){
-    			//Extract Path
-    			if((cTime - startTime) >= timeBudget - 1000000){
-    				if(VERBOSE){
+    			// Early Exit warning
+				if(VERBOSE > 3){
+					if((cTime - startTime) >= timeBudget - postSearchReserve){
     					System.out.println("Early Exit");
     				}
     			}
+				// Extract path
+    			while(current.parent() != null){
+    				if(current.action() != null){
+    					path.add(current);
+    					current = current.parent();
+    				}
+    			}
+    			Collections.reverse(path);
+    			return path;
+    		}
+    		
+    		for(Node next : current.genChildren()){
+    			float new_cost = cost_so_far.get(current) + next.cost(current);
+    			if(!cost_so_far.containsKey(next) || new_cost < cost_so_far.get(next)){
+    				cost_so_far.put(next, new_cost);
+    				float priority = new_cost + next.h(next._x, next._state.mario.xa);
+    				frontier.add(new Pair<Node, Float>(next, priority));
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
+    @SuppressWarnings("unused")
+	public ArrayList<Node> msearch(MarkovChain mc){
+    	long startTime = System.nanoTime();
+    	long cTime;
+    	// This is used to pass states between searches
+    	if (simState == null){
+    		workScene = backupState();
+    	}
+    	else{
+    		workScene = simState;
+    	}
+    	// Standard implementation of A* with early exit
+    	// mNodes are used to deal with markov chain
+    	ArrayList<Node> path = new ArrayList<Node>();
+    	HashMap<Node, Float> cost_so_far = new HashMap<Node, Float>();
+    	ArrayList< Pair<Node, Float> > frontier = new ArrayList<Pair <Node, Float> >();
+    	Node current = new mNode(mc.estimate());
+    	Node start = current;
+    	cost_so_far.put(current, 0f);
+    	frontier.add(new Pair<Node, Float>(current, 0f));
+    	while(!frontier.isEmpty()){
+    		current = getBest(frontier);
+        	cTime = System.nanoTime();
+    		
+    		if(dist(current, start) >= goal || 
+    		(cTime - startTime) >= (timeBudget - postSearchReserve)){
+    			if(VERBOSE > 3){
+    				// Early Exit warning
+    				if((cTime - startTime) >= timeBudget - postSearchReserve){
+    					System.out.println("Early Exit");
+    				}
+    			}
+    			// Extract Path
     			while(current.parent() != null){
     				if(current.action() != null){
     					path.add(current);
@@ -135,11 +201,11 @@ public class AStarSimulator{
 		return toReturn;
 	}
 
-	
 	public void advanceStep(boolean[] action){
 		levelScene.mario.setKeys(action);
 		levelScene.tick();
 	}
+
 	public void setLevelPart(byte[][] levelPart, float[] enemies){
 		levelScene.setLevelScene(levelPart);
 		levelScene.setEnemies(enemies);
@@ -172,7 +238,6 @@ public class AStarSimulator{
 	public void restoreState(LevelScene l){
 		levelScene = l;
 	}
-	
 	
 	public LevelScene backupState(){
 		LevelScene sceneCopy = null;
@@ -207,12 +272,12 @@ public class AStarSimulator{
     	  +10.90909091*y-88.26446282+9.090909091*s0);
     }
 
-    /////////////////////////////////////////////////////////
+    /////////////////////////Node & Pair//////////////////////
 	private class Node{
 		private boolean[] _action = null;
 		public float _x, _y;
-		private LevelScene _state;
-		private int _repeat = 1;
+		protected LevelScene _state;
+		protected int _repeat = 1;
 		private Node _parent = null;
 		private int _oDist;
 		//////////////////Initialization/////////////////////
@@ -266,13 +331,14 @@ public class AStarSimulator{
 		// This allows nodes to occasionally have the same cost so a tiebreaker
 		// is used in the frontier's get function
 		public float cost(Node n){
+			int death = 1;
 			if(_state.mario.status == 0){
-				return Float.POSITIVE_INFINITY;
+				death = 100000;
 			}
 			float d  = (nDamage() - n.nDamage());
 			float od = (1000000 - 100 * oDist());
 			float g = gap();
-			return (g * g) * (d * od)/( 1 + 
+			return death * (g * g) * (d * od)/( 1 + 
 					(n._state.powerUpsCollected - _state.powerUpsCollected) + 
 					(n._state.enemiesJumpedOn   - _state.enemiesJumpedOn)   +
 					(n._state.coinsCollected    - _state.coinsCollected));
@@ -295,7 +361,7 @@ public class AStarSimulator{
 	    	return n._state.mario.mayJump() || (n._state.mario.jumpTime > 0);
 	    }
 	    
-	    private ArrayList<boolean[]> genMoves(){
+	    protected ArrayList<boolean[]> genMoves(){
 			ArrayList<boolean[]> toReturn = new ArrayList<boolean[]>();
 			if(canJumpHigher(this, true)){ 
 				//Jump Right
@@ -345,6 +411,46 @@ public class AStarSimulator{
 		public int oDist(){
 			return _oDist;
 		}
+	}
+	
+	private class mNode extends Node{
+		private float _noiseP;
+		
+		public mNode(boolean[] action, LevelScene state, Node parent, float noiseP){
+			super(action, state, parent);
+			_noiseP = noiseP;
+		}
+		
+		public mNode(float noiseP){
+			super();
+			_noiseP = noiseP;
+		}
+		
+		public float cost(Node n){
+			if(_noiseP != 1){
+				return (super.cost(n) / (1 - _noiseP));
+			}
+			return (super.cost(n) / .00001f);
+		}
+		
+		public ArrayList<Node> genChildren(MarkovChain mc){
+			if(_state == null){
+				System.out.println("No state given");
+				return null;
+			}
+			ArrayList<boolean[]> moves = genMoves();
+			ArrayList<Node> children = new ArrayList<Node>();
+			mc.backup();
+			for(boolean[] move : moves){
+				workScene = cloneState(_state);
+				mc.observe(move[3]);
+				children.add(new mNode(move, simulateAction(move, _repeat), this, mc.estimate()));
+				mc.restore();
+			}
+			workScene = cloneState(levelScene);
+			return children;
+		}
+		
 	}
 	
 	public class Pair<A,B>{
