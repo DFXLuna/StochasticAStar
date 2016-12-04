@@ -5,18 +5,18 @@ The agent files are stored in competition/noisy.
 
 ## How it works
 The NoisyAgent runs a simulator alongside the actual game.
-On every call to NoisyAgent.getAction():
+On every call to [NoisyAgent.getAction()](../master/competition/noisy/NoisyAgent.java#L67-L100):
 
 ### Without Markovian Noise
 1. Update the simulator based on current observations and the previous action.
 2. Check the accuracy of the current simulator state(It occasionally desyncs)
-3. If there isn't a plan, call [NoisyAgent](../master/competition/noisy/NoisyAgent.java).Plan() (This may or may not change)
-4. [NoisyAgent](../master/competition/noisy/NoisyAgent.java).Plan() calls [AStarSimulator](../master/competition/noisy/AStarSimulator.java).getPlan()
+3. If there isn't a plan, call [NoisyAgent.Plan()](../master/competition/noisy/NoisyAgent.java#L103-L107) (This may or may not change)
+4. [NoisyAgent.Plan()](../master/competition/noisy/NoisyAgent.java#L103-L107) calls [AStarSimulator](../master/competition/noisy/AStarSimulator.java).getPlan()
 5. [AStarSimulator](../master/competition/noisy/AStarSimulator.java).getPlan() calls [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Search()
 6. [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Search() backs up the current simulator state and runs A* through a set of generated states.
-7. [AStarSimulator](../master/competition/noisy/AStarSimulator.java).getPlan() extracts the path from the result of the search and returns it back up to [NoisyAgent](../master/competition/noisy/NoisyAgent.java).Plan()
-8. After planning, [NoisyAgent](../master/competition/noisy/NoisyAgent.java).getAction() pops the first action off of the plan and returns it unless noise is enabled.
-9. If noise is enabled, [NoisyAgent](../master/competition/noisy/NoisyAgent.java).popAction() first calls NoisyAgent.noise(). This applies one of three different kinds of noise depending on the kind of trial being run.
+7. [AStarSimulator](../master/competition/noisy/AStarSimulator.java).getPlan() extracts the path from the result of the search and returns it back up to [NoisyAgent.Plan()](../master/competition/noisy/NoisyAgent.java#L103-L107)
+8. After planning, [NoisyAgent.getAction()](../master/competition/noisy/NoisyAgent.java#L67-L100) pops the first action off of the plan and returns it unless noise is enabled.
+9. If noise is enabled, [NoisyAgent.popAction()](../master/competition/noisy/NoisyAgent.java#L109-L120) first calls NoisyAgent.noise(). This applies one of three different kinds of noise depending on the kind of trial being run.
 10. After noise is applied, the resulting action is returned.
 
 ### With Markovian noise
@@ -30,14 +30,15 @@ Almost the same as  without except for these changes.
 
 ## Implementation Details
 The agent consists of four parts: [NoisyAgent](../master/competition/noisy/NoisyAgent.java), [AStarSimulator](../master/competition/noisy/AStarSimulator.java), [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node and [MarkovChain](../master/competition/noisy/MarkovChain.java)
+
 ### [AStarSimulator](../master/competition/noisy/AStarSimulator.java)
 * The simulator is based on [Robin Baumgarten's simulator](https://github.com/RobinB/mario-astar-robinbaumgarten). Everything was stripped except for the parts of his code which were either modified pieces of engine code or utility functions. Most magic numbers that pertain to the engine were also taken.
 * The simulator acts as a front end to a copy of [ch.idsia.mario.engine.LevelScene](../master/ch/idsia/mario/engine/LevelScene.java). The copy is stored in [competition.noisy.LevelScene](../master/competition/noisy/LevelScene.java). This version has all of the rendering code removed. Other than that it's almost identical to the engine's LevelScene and behaves the same way.
 * The current "real" state is held in [AStarSimulator](../master/competition/noisy/AStarSimulator.java).levelScene. [AStarSimulator](../master/competition/noisy/AStarSimulator.java).workScene is used to hold modifications made by [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node.genChildren() during search. 
 * The simulator implements time sensitive early exit, so line by line debugging won't work unless it is disabled.
 * Early exit is implemented in [AStarSimulator](../master/competition/noisy/AStarSimulator.java).search(). The time limit is 9ms (9000000ns). The time budget can be experimented with by changing [AStarSimulator](../master/competition/noisy/AStarSimulator.java).timeBudget. A small portion of the time budget is reserved for post search processing, this can be changed in [AStarSimulator](../master/competition/noisy/AStarSimulator.java).postSearchReserve. The default is 1ms(1000000ns). 
-* There is a system to pass simulator state information forward to future calls of [AStarSimulator](../master/competition/noisy/AStarSimulator.java).search(). The simulator's state is kept intact unless either [NoisyAgent](../master/competition/noisy/NoisyAgent.java).reset() or [AStarSimulator](../master/competition/noisy/AStarSimulator.java).simNull() is called.
-* To pass a state forward, just comment out ``sim.simNull();`` in [NoisyAgent](../master/competition/noisy/NoisyAgent.java).plan() and [AStarSimulator](../master/competition/noisy/AStarSimulator.java).cloneState() the workScene into simState after the search. You should also specify some criteria for dealing with that state, otherwise the simulator will ignore state updates and desync.
+* There is a system to pass simulator state information forward to future calls of [AStarSimulator](../master/competition/noisy/AStarSimulator.java).search(). The simulator's state is kept intact unless either [NoisyAgent.reset()](../master/competition/noisy/NoisyAgent.java#L51-L58) or [AStarSimulator](../master/competition/noisy/AStarSimulator.java).simNull() is called.
+* To pass a state forward, just comment out ``sim.simNull();`` in [NoisyAgent.Plan()](../master/competition/noisy/NoisyAgent.java#L103-L107) and [AStarSimulator](../master/competition/noisy/AStarSimulator.java).cloneState() the workScene into simState after the search. You should also specify some criteria for dealing with that state, otherwise the simulator will ignore state updates and desync.
 * This allowed breaking the search up in to pieces. However, this was a little too heavy to do quickly. The extra overhead of recalling each function and recreating nodes is too much.
 * [AStarSimulator](../master/competition/noisy/AStarSimulator.java).msearch() and  [AStarSimulator](../master/competition/noisy/AStarSimulator.java).mNode just bake a probability into the cost of a node.
 * Because learning isn't employed for the Markov Chain, the only permenant observation that search gives to the chain is the prior. 
@@ -54,18 +55,25 @@ the latest real position is always the prior.
  *  [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node.genChildren() is overriden to create  [AStarSimulator](../master/competition/noisy/AStarSimulator.java).mNodes when searching.
 
 ### [NoisyAgent](../master/competition/noisy/NoisyAgent.java)
-* If noise is enabled, it's applied to actions during [NoisyAgent](../master/competition/noisy/NoisyAgent.java).popAction(). 
+* If noise is enabled, it's applied to actions during [NoisyAgent.popAction()](../master/competition/noisy/NoisyAgent.java#L109-L120). 
 * The three types of noise that this implements are cancellation, randomization and Markovian noise.
 * Cancellation ignores an action.
 * Randomization ignores an action and sets a new random action.
 * Markovian noise bases the chance to change an action on the previous state. This makes it easier to implement and test a Markov Chain model for estimating noise.
 * Strategy selection is implemented as a constant [NoisyAgent](../master/competition/noisy/NoisyAgent.java).STRAT.
- * If Reactive is chosen, the agent will replan after each frame with noise.
+ * If Reactive is chosen, the agent will replan after each frame with noise. See "A Note on Reactive Strategies".
  * If Proactive is chose, the agent will employ a [MarkovChain](../master/competition/noisy/MarkovChain.java) to estimate the probability of noise at each step.
+ * Both can be employed simultaneously
 
 ### [MarkovChain](../master/competition/noisy/MarkovChain.java)
 * This is just the most basic implementation of a Markov Chain. It implements state estimation and prediction.
 * Backup and restore can be used to simulate what would happen if a particular observation is found. This is more accurate than using predict. Since states are being simulated, the program takes advantage of this during [AStarSimulator](../master/competition/noisy/AStarSimulator.java).Node.genChildren()
+
+### Misc
+* A Verbosity switch (VERBOSE) is set in the [Verbose](../master/competition/noisy/Verbose.java) interface. Both [NoisyAgent](../master/competition/noisy/NoisyAgent.java) and [AStarSimulator](../master/competition/noisy/AStarSimulator.java) use this switch to determine whether or not to print diagnostic output to stdout.
+
+###  Note on Reactive Strategies.
+The reactive strategy is probably the best but also the most expensive as it requires a full replan whenever noise occurs. As noise approaches 100%, the reactive strategy will approach replanning on every frame. This means the chance of a desync increases drastically.
 
 ## To create your own agent
 * Get a copy of the [unmodified competition source](http://julian.togelius.com/mariocompetition2009/marioai.zip).
