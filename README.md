@@ -105,3 +105,4 @@ options.setAgent(new YourAgent());
 * [Unmodified Competition Source](http://julian.togelius.com/mariocompetition2009/marioai.zip)
 * [Mario AI 2009 Website](http://julian.togelius.com/mariocompetition2009/)
 * [All entries to the ICE-CIG and CIG 2009 Competitions](http://julian.togelius.com/mariocompetition2009/marioaiwithentrants.zip)
+* [Markov Chain on Wikipedia](https://en.wikipedia.org/wiki/Markov_chain)
