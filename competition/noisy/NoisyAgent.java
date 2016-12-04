@@ -30,7 +30,12 @@ public class NoisyAgent implements Agent, Verbose{
     // 1 = Cancellation
     // 2 = Randomization
     // 3 = Markovian implementation of either 1 or 2
-    private static int NOISE = 3;
+    private static int NOISE = 0;
+    // 0 = No strategy to deal with noise
+    // 1 = Reactive
+    // 2 = Proactive
+    // 3 = Both
+    private static int STRAT = 0;
     // Prob is 100 - (Percent chance for noise to occur)
     // Only matters for cancellation and randomization
     private static int PROB  = 100 - 5; 
@@ -46,7 +51,7 @@ public class NoisyAgent implements Agent, Verbose{
     public void reset(){
         requirePlan = true;
         action = new boolean[Environment.numberOfButtons];
-        if (NOISE > 2){
+        if (STRAT >= 2 && NOISE > 2){
         	mc = new MarkovChain(sense, trans);
         }
         sim = new AStarSimulator();
@@ -55,8 +60,6 @@ public class NoisyAgent implements Agent, Verbose{
     // Simulation becomes inaccurate when we take more than some amount of time to plan
     
 	// TODO
-    // test mSearch
-    // Reactive noise strategy
     // >> Entry on readme about reactive noise strat approaching always replan
     // Do stats
     // Update README.MD to link to specific lines of code
@@ -104,7 +107,7 @@ public class NoisyAgent implements Agent, Verbose{
     }
     
     private boolean[] popAction(){
-    	if(plan.size() == 1){
+    	if(plan.size() == 1 || (nPrev && (STRAT == 1 || STRAT == 3))){
     		requirePlan = true;
     	}
 		boolean[] toReturn = plan.get(0);
