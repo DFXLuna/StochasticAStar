@@ -73,11 +73,17 @@ the latest real position is always the prior.
 * This is just the most basic implementation of a Markov Chain. It implements state estimation and prediction.
 * Backup and restore can be used to simulate what would happen if a particular observation is found. This is more accurate than using predict. Since states are being simulated, the program takes advantage of this during [AStarSimulator.mNode.genChildren()](../master/competition/noisy/AStarSimulator.java#L436-L452).
 
+### Test Data
+![Graph1](https://github.com/DFXLuna/StochasticAStar/blob/master/TestData/Graph.png "Aggregated Results")
+![Graph2](https://github.com/DFXLuna/StochasticAStar/blob/master/TestData/Graphs.png "Separated Results")
+
+* A note on the Markovian Results ("Markvoian" and "Reactive + Markovian"): The probability of noise doesn't increase, the transition model just changes as t = {Prob, 100 - Prob} where t[0] is the probability of noise if previous frame had noise and t[1] is probability of noise if previous frame didn't have noise.
+
 ### Misc
 * A Verbosity switch (VERBOSE) is set in the [Verbose](../master/competition/noisy/Verbose.java) interface. Both [NoisyAgent](../master/competition/noisy/NoisyAgent.java) and [AStarSimulator](../master/competition/noisy/AStarSimulator.java) use this switch to determine whether or not to print diagnostic output to stdout.
 
 ###  Note on Reactive Strategies.
-The reactive strategy is probably the best but also the most expensive as it requires a full replan whenever noise occurs. As noise approaches 100%, the reactive strategy will approach replanning on every frame. This means the chance of a desync increases drastically.
+As noise approaches 100%, the reactive strategy will approach replanning on every frame. This means the chance of a desync increases drastically.
 
 ## To create your own agent
 * Get a copy of the [unmodified competition source](http://julian.togelius.com/mariocompetition2009/marioai.zip).
