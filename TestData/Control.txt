@@ -1,0 +1,196 @@
+Average score over 50 runs: 1927.9564
+Noise: 0
+Strat: 0
+Prob: 0
+------------------------------------------
+
+Average score over 50 runs: 1771.8882
+Noise: 0
+Strat: 0
+Prob: 5
+Average score over 50 runs: 1760.2117
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 10
+Average score over 50 runs: 1942.4382
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 15
+Average score over 50 runs: 1976.3226
+------------------------------------------
+ 
+Noise: 0
+Strat: 0
+Prob: 20
+Average score over 50 runs: 2136.638
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 25
+Average score over 50 runs: 1893.1235
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 30
+Average score over 50 runs: 2104.2588
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 35
+Average score over 50 runs: 2059.0842
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 40
+Average score over 50 runs: 2034.6223
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 45
+Average score over 50 runs: 1871.6754
+------------------------------------------
+
+Noise: 0
+Strat: 0
+Prob: 50
+Average score over 50 runs: 2023.4576
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 0
+Average score over 50 runs: 1860.679
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 5
+Average score over 50 runs: 1559.4938
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 10
+Average score over 50 runs: 1815.104
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 15
+Average score over 50 runs: 1456.0004
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 20
+Average score over 50 runs: 1520.4303
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 25
+Average score over 50 runs: 1548.7892
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 30
+Average score over 50 runs: 1321.6584
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 35
+Average score over 50 runs: 1218.1808
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 40
+Average score over 50 runs: 1105.272
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 45
+Average score over 50 runs: 1055.6715
+------------------------------------------
+
+Noise: 1
+Strat: 0
+Prob: 50
+Average score over 50 runs: 1974.3916
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 0
+Average score over 50 runs: 2118.622
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 5
+Average score over 50 runs: 1664.1346
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 10
+Average score over 50 runs: 1635.3029
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 15
+Average score over 50 runs: 1305.1859
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 20
+Average score over 50 runs: 1431.8917
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 25
+Average score over 50 runs: 1365.1678
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 30
+Average score over 50 runs: 1336.9371
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 35
+Average score over 50 runs: 1291.4445
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 40
+Average score over 50 runs: 1195.3473
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 45
+Average score over 50 runs: 1201.9523
+------------------------------------------
+
+Noise: 2
+Strat: 0
+Prob: 50

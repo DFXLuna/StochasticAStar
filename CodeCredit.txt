@@ -1,0 +1,22 @@
+// Matt Grant
+// This file outlines what code was borrowed from other people
+// All code not outlined here was written exclusively by me
+
+Mario AI 2009 Package: Sergey Karakovskiy and Julian Togelius
+ >> All file outside of competition/noisy
+ >> All files in competition/noisy/level (Used for simulation)
+Simluation code: Robin Baumgarten
+ >> competition/noisy/LevelScene (Modified engine code for simulation)
+ >> compeititon/noisy/AStarSimulator (Modified engine code for simulation
+    >> Lines 35  - 44  (Initialization)
+    >> Lines 190 - 193 (Simulation)
+    >> Lines 204 - 212 (Simulation)
+    >> Lines 227 - 253 (State cloning)
+    >> Lines 255 - 264 (Print action)
+    >> Lines 267 - 273 (Movement Estimation)
+    >> Lines 357 - 362 (Determine jump height)
+    >> Lines 388 - 396 (Create action)
+    >> Magic numbers in Node.h and Node.cost
+
+
+
