@@ -1,7 +1,11 @@
 # Stochastic A*
 An implementation of the A* algorithm in a modified version of the Mario AI 2009 competition.
 
-The agent files are stored in competition/noisy.
+The agent files are stored [competition/noisy](../master/competition/noisy)
+
+Test Data available in the directory [TestData](../master/TestData/)
+
+Code Credits available in [CodeCredit.txt](../master/CodeCredit.txt)
 
 ## How it works
 The NoisyAgent runs a simulator alongside the actual game.
